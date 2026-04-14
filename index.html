@@ -1,401 +1,851 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Egg Game</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Egg Game</title>
+<style>
+  :root{
+    --bg:#cccaca;
+    --line:#000;
+    --paper:#fff;
+  }
 
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Arial', sans-serif;
-        }
+  *{box-sizing:border-box}
+  html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#fff;
+    font-family:"Times New Roman", serif;
+  }
 
-        .game-container {
-            text-align: center;
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            min-width: 400px;
-        }
+  body{
+    cursor:crosshair;
+  }
 
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 36px;
-        }
+  .egg-game-container *{
+    -webkit-user-select:none;
+    user-select:none;
+  }
 
-        .egg-counter {
-            font-size: 32px;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 30px;
-            min-height: 40px;
-        }
+  .eggcellent-header{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    z-index:9999;
+    height:10%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    pointer-events:none;
+  }
 
-        .egg-button {
-            width: 200px;
-            height: 200px;
-            border: none;
-            border-radius: 50%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><radialGradient id="eggGrad" cx="40%" cy="30%"><stop offset="0%" style="stop-color:%23fffacd;stop-opacity:1" /><stop offset="100%" style="stop-color:%23f5deb3;stop-opacity:1" /></radialGradient></defs><ellipse cx="100" cy="100" rx="85" ry="95" fill="url(%23eggGrad)" stroke="%23d4a574" stroke-width="2"/><ellipse cx="85" cy="80" rx="20" ry="25" fill="%23fffacd" opacity="0.7"/></svg>') center/contain no-repeat;
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
-            margin: 0 auto 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            display: block;
-        }
+  .eggcellent-header .donate-wrapper{
+    pointer-events:auto;
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
 
-        .egg-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
-        }
+  .eggcellent-header .donate-wrapper button{
+    width:10vw;
+    min-width:110px;
+    height:6vh;
+    border:.3vw solid black;
+    background:#fff;
+    font-weight:400;
+    font-size:1.2vw;
+    letter-spacing:.06em;
+  }
 
-        .egg-button:active {
-            transform: scale(0.98);
-        }
+  .eggcellent-header .og-artist{
+    position:absolute;
+    top:0;
+    right:0;
+    padding-right:3vw;
+    font-size:1vw;
+    pointer-events:auto;
+  }
 
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-            font-size: 16px;
-            color: #666;
-        }
+  .eggcellent-header .og-artist a{
+    color:#000;
+    text-decoration:none;
+  }
 
-        .stat-item {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-        }
+  .egg-game-container{
+    background:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:99vh;
+    width:100vw;
+    margin-top:1.5vh;
+  }
 
-        .stat-label {
-            font-size: 12px;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
+  .popup-wrapper{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:30;
+    background:rgba(255,255,255,.06);
+    pointer-events:auto;
+  }
 
-        .stat-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-        }
+  .egg-game-wrapper{
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    height:85vh;
+    width:90vw;
+    border-bottom-left-radius:1.5vw;
+    border-bottom-right-radius:1.5vw;
+    border:.4vw solid black;
+    position:relative;
+    overflow:hidden;
+  }
 
-        .upgrades {
-            margin-top: 40px;
-            text-align: left;
-        }
+  .egg-game-header,
+  .popup-header{
+    background:
+      repeating-linear-gradient(
+        to right,
+        transparent 0 10px,
+        black 10px 12px,
+        transparent 12px 22px
+      );
+    background-size:100% 10px;
+    background-repeat:no-repeat;
+    background-position:center;
+  }
 
-        .upgrades h2 {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 15px;
-            text-align: center;
-        }
+  .egg-game-header{
+    height:5vh;
+    width:100%;
+    border-bottom:.4vw solid black;
+    background-color:#fff;
+  }
 
-        .upgrade-btn {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 10px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-            text-align: left;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+  .egg-game-body{
+    position:relative;
+    text-align:center;
+    height:100%;
+  }
 
-        .upgrade-btn:hover:not(:disabled) {
-            border-color: #667eea;
-            background: #f9f9ff;
-        }
+  .egg-game-body h1{
+    font-weight:400;
+    font-size:2.7vw;
+    letter-spacing:.08em;
+    margin:.75em 0 .5em;
+  }
 
-        .upgrade-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+  .egg-game-itself{
+    height:75%;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    align-items:end;
+  }
 
-        .upgrade-cost {
-            font-weight: bold;
-            color: #667eea;
-            min-width: 80px;
-            text-align: right;
-        }
+  .egg-guy-container,
+  .egg-basket-container{
+    display:flex;
+    align-items:flex-end;
+    position:relative;
+    height:100%;
+  }
 
-        .floating-text {
-            position: fixed;
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-            pointer-events: none;
-            animation: float 1s ease-out forwards;
-        }
+  .egg-guy,
+  .egg-guy-down,
+  .egg-guy-chewing{
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    width:100%;
+    height:100%;
+    margin-left:3vw;
+  }
 
-        @keyframes float {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-        }
+  .egg-guy-img-wrapper{
+    display:flex;
+    justify-content:center;
+    align-items:flex-end;
+    position:relative;
+    width:35%;
+    min-width:220px;
+    max-width:430px;
+  }
 
-        .milestone {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            z-index: 1000;
-            animation: milestoneShow 2s ease-out;
-            pointer-events: none;
-        }
+  .egg-guy-img-wrapper img,
+  .egg-guy-img-wrapper svg{
+    width:100%;
+    display:block;
+  }
 
-        @keyframes milestoneShow {
-            0% {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.5);
-            }
-            50% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
+  .egg-guy-chewing .egg-guy-img-wrapper::after{
+    content:"";
+    position:absolute;
+    width:38%;
+    height:7%;
+    left:31%;
+    top:34%;
+    background:#000;
+    border-radius:999px;
+    animation:chew .4s linear 1;
+    opacity:.95;
+  }
 
-        .milestone h3 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
+  .egg-basket-wrapper{
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    width:100%;
+    height:100%;
+    margin-right:3vw;
+    justify-content:flex-end;
+  }
 
-        .milestone p {
-            font-size: 18px;
-            color: #aaa;
-        }
-    </style>
+  .egg-basket,
+  .draggable-container{
+    position:absolute;
+    width:25%;
+    right:0;
+    bottom:0;
+  }
+
+  .egg-basket{
+    aspect-ratio:1 / 1;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    pointer-events:none;
+  }
+
+  .basket-svg{
+    width:100%;
+    height:auto;
+    display:block;
+  }
+
+  .draggable-container{
+    aspect-ratio:1 / 1;
+    touch-action:none;
+  }
+
+  .draggable-egg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+  }
+
+  .draggable-egg-inner{
+    position:absolute;
+    width:30%;
+    left:50%;
+    top:48%;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+
+  .eggs-count{
+    text-align:right;
+    width:93%;
+    bottom:-5vh;
+    right:0;
+    position:absolute;
+    font-size:1vw;
+    letter-spacing:.08em;
+  }
+
+  .popup-container{
+    background:white;
+    width:40vw;
+    max-width:620px;
+    height:35vh;
+    max-height:300px;
+    border:.3vw solid black;
+    box-shadow:0 14px 30px rgba(0,0,0,.18);
+  }
+
+  .popup-header{
+    background-color:#fff;
+    height:3vh;
+    width:100%;
+    border-bottom:.3vw solid black;
+  }
+
+  .popup-body{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:calc(100% - 3vh);
+    border:.2vw solid #cccaca;
+    border-top:transparent;
+    text-align:center;
+    padding:1rem;
+    background:#fff;
+  }
+
+  .popup-body h2{
+    font-size:1.45vw;
+    font-weight:400;
+    letter-spacing:.06em;
+    margin:0;
+  }
+
+  .EGGS-TEXT-CONTAINER{
+    width:80%;
+  }
+
+  .ran-out-text-area{
+    max-width:100%;
+    width:100%;
+    border:2px solid #000;
+    font-size:1.2vw;
+    letter-spacing:1.5px;
+    padding:.5vw;
+    margin-top:1rem;
+  }
+
+  .donate-container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    gap:1rem;
+  }
+
+  .donate-container a{
+    color:#000;
+    text-decoration:underline;
+  }
+
+  .walking-egg{
+    position:absolute;
+    width:132%;
+    bottom:0;
+    animation:walk 5s linear forwards;
+    z-index:5;
+  }
+
+  .show-ass{
+    position:absolute;
+    width:132%;
+    bottom:0;
+    transform:translate(35vw);
+    animation:no-anim 9s linear forwards;
+    z-index:6;
+  }
+
+  .hidden{
+    display:none !important;
+  }
+
+  @keyframes chew{
+    0%{width:10%}
+    25%{width:50%}
+    50%{width:10%}
+    75%{width:50%}
+    100%{width:10%}
+  }
+
+  @keyframes walk{
+    0%,30%{transform:translate(0)}
+    100%{transform:translate(35vw)}
+  }
+
+  @keyframes no-anim{
+    0%{transform:translate(35vw)}
+    100%{transform:translate(35vw)}
+  }
+
+  @media (max-width: 768px) and (orientation: portrait){
+    .eggcellent-header .og-artist{font-size:3vw}
+    .eggcellent-header .donate-wrapper button{
+      width:25vw;
+      min-width:0;
+      height:4.3vh;
+      font-size:3vw;
+      border:.5vw solid black;
+    }
+    .egg-game-body h1{font-size:6vw}
+    .egg-guy-img-wrapper{width:80%; min-width:160px}
+    .egg-basket,.draggable-container{width:50%}
+    .eggs-count{font-size:4vw; width:97%}
+    .popup-container{width:70vw; height:25vh}
+    .popup-body h2{font-size:4vw}
+    .ran-out-text-area{font-size:4vw; padding:2vw}
+    .show-ass{transform:translate(25vw)}
+    @keyframes walk{
+      0%,30%{transform:translate(0)}
+      100%{transform:translate(25vw)}
+    }
+    @keyframes no-anim{
+      0%{transform:translate(25vw)}
+      100%{transform:translate(25vw)}
+    }
+  }
+</style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>🥚 EGG GAME 🥚</h1>
-        <div class="egg-counter" id="eggCount">0 eggs</div>
-        <button class="egg-button" id="eggButton"></button>
+<div class="eggcellent-header">
+  <div class="donate-wrapper">
+    <button id="donateBtn">DONATE</button>
+  </div>
+</div>
 
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-label">Eggs Per Click</div>
-                <div class="stat-value" id="eggPerClick">1</div>
+<div class="egg-game-container">
+  <div class="egg-game-wrapper">
+    <div class="egg-game-header"></div>
+    <div class="egg-game-body">
+      <h1>FEED EGGS</h1>
+
+      <div class="egg-game-itself">
+        <div class="egg-guy-container">
+          <div id="eggGuy" class="egg-guy-down">
+            <div class="egg-guy-img-wrapper" id="eggTargetWrap">
+              <div id="walkingEgg" class="walking-egg hidden"></div>
+              <div id="showAss" class="show-ass hidden"></div>
+
+              <div id="eggFaceContainer"></div>
             </div>
-            <div class="stat-item">
-                <div class="stat-label">Eggs Per Second</div>
-                <div class="stat-value" id="eggsPerSecond">0</div>
-            </div>
+          </div>
         </div>
 
-        <div class="upgrades">
-            <h2>🔧 Upgrades</h2>
-            <button class="upgrade-btn" id="upgrade1">
-                <span>2x Multiplier</span>
-                <span class="upgrade-cost" id="cost1">50 🥚</span>
-            </button>
-            <button class="upgrade-btn" id="upgrade2">
-                <span>Auto Clicker (1/sec)</span>
-                <span class="upgrade-cost" id="cost2">100 🥚</span>
-            </button>
-            <button class="upgrade-btn" id="upgrade3">
-                <span>Golden Egg (5x multiplier)</span>
-                <span class="upgrade-cost" id="cost3">500 🥚</span>
-            </button>
+        <div class="egg-basket-container">
+          <div class="egg-basket-wrapper">
+            <div class="egg-basket" aria-hidden="true">
+              <svg class="basket-svg" viewBox="0 0 200 200">
+                <path d="M35 140
+                         C20 118, 18 92, 35 72
+                         C52 52, 82 45, 100 60
+                         C118 45, 148 52, 165 72
+                         C182 92, 180 118, 165 140
+                         L154 178
+                         L46 178 Z"
+                      fill="#fff" stroke="#000" stroke-width="6"/>
+                <path d="M46 178 H154" stroke="#000" stroke-width="8"/>
+                <path d="M63 142 C74 117, 90 103, 100 103 C110 103, 126 117, 137 142"
+                      fill="none" stroke="#000" stroke-width="6"/>
+              </svg>
+            </div>
+
+            <div class="draggable-container" id="dragArea">
+              <div class="draggable-egg" id="draggableEgg">
+                <div class="draggable-egg-inner" id="eggDragVisual"></div>
+              </div>
+            </div>
+
+            <p class="eggs-count hidden" id="eggsCountLabel">EGGS: 80</p>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const eggButton = document.getElementById('eggButton');
-        const eggCountDisplay = document.getElementById('eggCount');
-        const eggPerClickDisplay = document.getElementById('eggPerClick');
-        const eggsPerSecondDisplay = document.getElementById('eggsPerSecond');
+  <div class="popup-wrapper hidden" id="popupWrap">
+    <div class="popup-container">
+      <div class="popup-header"></div>
+      <div class="popup-body" id="popupBody"></div>
+    </div>
+  </div>
+</div>
 
-        let eggs = 0;
-        let eggPerClick = 1;
-        let autoClickersCount = 0;
-        let multiplier = 1;
-        let hasGoldenEgg = false;
+<script>
+  const state = {
+    totalFed: 0,
+    dragging: false,
+    chewing: false,
+    disabled: false,
+    basketEggs: 80,
+    hasBoughtEggs: false,
+    popupOpen: false,
+    won: false,
+    startWinAnimation: false,
+    buttDone: false,
+    randomPopupTimer: null,
+    randomPopupValue: 0
+  };
 
-        const upgrades = {
-            upgrade1: { cost: 50, bought: false },
-            upgrade2: { cost: 100, bought: false, interval: null },
-            upgrade3: { cost: 500, bought: false }
-        };
+  const eggGuy = document.getElementById('eggGuy');
+  const eggTargetWrap = document.getElementById('eggTargetWrap');
+  const eggFaceContainer = document.getElementById('eggFaceContainer');
+  const dragArea = document.getElementById('dragArea');
+  const draggableEgg = document.getElementById('draggableEgg');
+  const eggDragVisual = document.getElementById('eggDragVisual');
+  const popupWrap = document.getElementById('popupWrap');
+  const popupBody = document.getElementById('popupBody');
+  const donateBtn = document.getElementById('donateBtn');
+  const eggsCountLabel = document.getElementById('eggsCountLabel');
+  const walkingEgg = document.getElementById('walkingEgg');
+  const showAss = document.getElementById('showAss');
 
-        // Load game state from localStorage
-        function loadGame() {
-            const saved = localStorage.getItem('eggGameState');
-            if (saved) {
-                const state = JSON.parse(saved);
-                eggs = state.eggs || 0;
-                multiplier = state.multiplier || 1;
-                autoClickersCount = state.autoClickersCount || 0;
-                hasGoldenEgg = state.hasGoldenEgg || false;
-                upgrades.upgrade1.bought = state.upgrade1 || false;
-                upgrades.upgrade2.bought = state.upgrade2 || false;
-                upgrades.upgrade3.bought = state.upgrade3 || false;
+  function eggSVG(mode = 'down') {
+    let mouth = '';
+    if (mode === 'down') {
+      mouth = `<ellipse cx="50" cy="53.5" rx="19" ry="20.5" fill="#000"/>`;
+    } else if (mode === 'up') {
+      mouth = `<ellipse cx="50" cy="42.5" rx="19" ry="20.5" fill="#000"/>`;
+    } else if (mode === 'closed') {
+      mouth = `<ellipse cx="50" cy="39.5" rx="12" ry="3.8" fill="#000"/>`;
+    }
+
+    return `
+      <svg viewBox="0 0 100 120" aria-hidden="true">
+        <rect width="100" height="120" fill="#d9d9d9"/>
+        <ellipse cx="50" cy="58" rx="45" ry="54" fill="#e6e6e6" stroke="#000" stroke-width="1.6"/>
+        <circle cx="37" cy="26" r="6.2" fill="#fff" stroke="#000" stroke-width="1.2"/>
+        <circle cx="63" cy="26" r="6.2" fill="#fff" stroke="#000" stroke-width="1.2"/>
+        <circle cx="37" cy="26.4" r="1.0" fill="#000"/>
+        <circle cx="63" cy="26.4" r="1.0" fill="#000"/>
+        ${mouth}
+        <path d="M5 118
+                 C6 111, 9 105, 15 102
+                 C21 99, 27 100, 31 104
+                 L31 102
+                 L31 88
+                 L38 94
+                 L38 118 Z"
+              fill="#e6e6e6" stroke="#000" stroke-width="1.5"/>
+        <path d="M95 118
+                 C94 111, 91 105, 85 102
+                 C79 99, 73 100, 69 104
+                 L69 102
+                 L69 88
+                 L62 94
+                 L62 118 Z"
+              fill="#e6e6e6" stroke="#000" stroke-width="1.5"/>
+      </svg>
+    `;
+  }
+
+  function smallEggSVG() {
+    return `
+      <svg viewBox="0 0 100 120" aria-hidden="true">
+        <ellipse cx="50" cy="60" rx="35" ry="48" fill="#efefef" stroke="#000" stroke-width="6"/>
+        <circle cx="37" cy="44" r="6" fill="#fff" stroke="#000" stroke-width="4"/>
+        <circle cx="63" cy="44" r="6" fill="#fff" stroke="#000" stroke-width="4"/>
+        <circle cx="37" cy="44" r="2" fill="#000"/>
+        <circle cx="63" cy="44" r="2" fill="#000"/>
+        <ellipse cx="50" cy="70" rx="16" ry="19" fill="#000"/>
+      </svg>
+    `;
+  }
+
+  function censoredButtSVG() {
+    return `
+      <svg viewBox="0 0 200 160" aria-hidden="true">
+        <ellipse cx="100" cy="80" rx="72" ry="54" fill="#e8e8e8" stroke="#000" stroke-width="6"/>
+        <ellipse cx="76" cy="84" rx="28" ry="34" fill="#d9d9d9" stroke="#000" stroke-width="4"/>
+        <ellipse cx="124" cy="84" rx="28" ry="34" fill="#d9d9d9" stroke="#000" stroke-width="4"/>
+        <text x="100" y="86" text-anchor="middle" font-size="20" fill="#fff" font-family="Arial">STEVE WAS HERE</text>
+      </svg>
+    `;
+  }
+
+  function renderEggFace() {
+    if (state.startWinAnimation && !state.buttDone) {
+      eggFaceContainer.innerHTML = '';
+      walkingEgg.classList.remove('hidden');
+      walkingEgg.innerHTML = smallEggSVG();
+      showAss.classList.add('hidden');
+      return;
+    }
+
+    if (state.buttDone) {
+      eggFaceContainer.innerHTML = '';
+      walkingEgg.classList.add('hidden');
+      showAss.classList.remove('hidden');
+      showAss.innerHTML = censoredButtSVG();
+      return;
+    }
+
+    walkingEgg.classList.add('hidden');
+    showAss.classList.add('hidden');
+
+    if (state.chewing) {
+      eggFaceContainer.innerHTML = eggSVG('closed');
+      eggGuy.className = 'egg-guy-chewing';
+    } else if (state.dragging) {
+      eggFaceContainer.innerHTML = eggSVG('up');
+      eggGuy.className = 'egg-guy';
+    } else {
+      eggFaceContainer.innerHTML = eggSVG('down');
+      eggGuy.className = 'egg-guy-down';
+    }
+  }
+
+  function renderDragEgg() {
+    eggDragVisual.innerHTML = smallEggSVG();
+  }
+
+  function updateEggCountLabel() {
+    if (state.hasBoughtEggs) {
+      eggsCountLabel.classList.remove('hidden');
+      eggsCountLabel.textContent = 'EGGS: ' + state.basketEggs;
+    } else {
+      eggsCountLabel.classList.add('hidden');
+    }
+  }
+
+  function speak(text, opts = {}) {
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.pitch = opts.pitch ?? 1.2;
+      utter.rate = opts.rate ?? 1.0;
+      window.speechSynthesis.speak(utter);
+      if (typeof opts.onend === 'function') utter.onend = opts.onend;
+    } catch (err) {}
+  }
+
+  function showPopup(html) {
+    state.popupOpen = true;
+    popupBody.innerHTML = html;
+    popupWrap.classList.remove('hidden');
+  }
+
+  function hidePopup() {
+    state.popupOpen = false;
+    popupWrap.classList.add('hidden');
+    popupBody.innerHTML = '';
+  }
+
+  function showEggCountPopup(num) {
+    showPopup(`<h2>${num} EGGS</h2>`);
+    speak(`${num} eggs`, { pitch: 1.7, rate: 0.9 });
+    setTimeout(() => {
+      if (!state.won && !state.disabled) hidePopup();
+    }, 2200);
+  }
+
+  function showDonatePopup() {
+    state.disabled = true;
+    showPopup(`
+      <div class="donate-container">
+        <h2>YOU GOTTA GIVE BRYAN A PLAQUE</h2>
+      </div>
+    `);
+    speak('You gotta give Bryan a plaque');
+    popupWrap.onclick = (e) => {
+      if (e.target === popupWrap) {
+        popupWrap.onclick = null;
+        state.disabled = false;
+        hidePopup();
+      }
+    };
+  }
+
+  function showRanOutPopup() {
+    state.disabled = true;
+    showPopup(`
+      <div class="EGGS-TEXT-CONTAINER">
+        <h2>Dude, you ran out of eggs. Would you like to buy an 80 pack of eggs?</h2>
+        <input class="ran-out-text-area" id="buyEggsInput" type="text" placeholder="YES or NO" />
+      </div>
+    `);
+    speak('Dude, you ran out of eggs. Would you like to buy an 80 pack of eggs?');
+
+    const input = document.getElementById('buyEggsInput');
+    input?.focus();
+    input?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        state.hasBoughtEggs = true;
+        state.basketEggs = 80;
+        state.disabled = false;
+        hidePopup();
+        updateEggCountLabel();
+      }
+    });
+  }
+
+  function showWinPopup() {
+    state.won = true;
+    state.disabled = true;
+    showPopup(`<h2>41 EGGS</h2>`);
+    speak('41 eggs you win', {
+      pitch: 1.7,
+      rate: 0.9,
+      onend: () => {
+        setTimeout(() => {
+          popupBody.innerHTML = `<h2>Congrats big boy</h2>`;
+          speak('Congrats big boy', {
+            pitch: 1.7,
+            rate: 0.9,
+            onend: () => {
+              setTimeout(() => {
+                hidePopup();
+                state.startWinAnimation = true;
+                renderEggFace();
+              }, 500);
             }
-        }
+          });
+        }, 450);
+      }
+    });
+  }
 
-        // Save game state to localStorage
-        function saveGame() {
-            const state = {
-                eggs,
-                multiplier,
-                autoClickersCount,
-                hasGoldenEgg,
-                upgrade1: upgrades.upgrade1.bought,
-                upgrade2: upgrades.upgrade2.bought,
-                upgrade3: upgrades.upgrade3.bought
-            };
-            localStorage.setItem('eggGameState', JSON.stringify(state));
-        }
+  function showNudeEggPopup() {
+    state.buttDone = true;
+    renderEggFace();
+    showPopup(`<h2>You're looking at a nude egg.</h2>`);
+    speak("You're looking at a nude egg.", {
+      pitch: 1.7,
+      rate: 0.9,
+      onend: () => {
+        setTimeout(() => {
+          location.reload();
+        }, 5000);
+      }
+    });
+  }
 
-        function updateDisplay() {
-            eggCountDisplay.textContent = eggs.toLocaleString() + ' eggs';
-            eggPerClickDisplay.textContent = (eggPerClick * multiplier);
-            eggsPerSecondDisplay.textContent = (autoClickersCount).toFixed(1);
+  function maybeTriggerRandomPopup() {
+    const delay = Math.floor(Math.random() * 80000) + 20000;
+    clearTimeout(state.randomPopupTimer);
+    state.randomPopupTimer = setTimeout(() => {
+      if (state.popupOpen || state.disabled || state.won) {
+        maybeTriggerRandomPopup();
+        return;
+      }
 
-            // Update upgrade buttons
-            document.getElementById('upgrade1').disabled = eggs < upgrades.upgrade1.cost || upgrades.upgrade1.bought;
-            document.getElementById('upgrade2').disabled = eggs < upgrades.upgrade2.cost || upgrades.upgrade2.bought;
-            document.getElementById('upgrade3').disabled = eggs < upgrades.upgrade3.cost || upgrades.upgrade3.bought;
+      const rand = Math.random() <= 0.02
+        ? Math.floor(Math.random() * 900) + 100
+        : Math.floor(Math.random() * 100);
 
-            // Update button text if bought
-            if (upgrades.upgrade1.bought) document.getElementById('upgrade1').innerHTML = '<span>✓ 2x Multiplier</span><span class="upgrade-cost">OWNED</span>';
-            if (upgrades.upgrade2.bought) document.getElementById('upgrade2').innerHTML = '<span>✓ Auto Clicker (1/sec)</span><span class="upgrade-cost">OWNED</span>';
-            if (upgrades.upgrade3.bought) document.getElementById('upgrade3').innerHTML = '<span>✓ Golden Egg (5x multiplier)</span><span class="upgrade-cost">OWNED</span>';
-        }
+      state.randomPopupValue = rand;
+      showEggCountPopup(rand);
+      setTimeout(() => {
+        hidePopup();
+        maybeTriggerRandomPopup();
+      }, 4000);
+    }, delay);
+  }
 
-        function addEggs(amount) {
-            const earnedEggs = amount * multiplier;
-            eggs += earnedEggs;
-            showFloatingText('+' + earnedEggs.toLocaleString(), event?.clientX || window.innerWidth / 2, event?.clientY || window.innerHeight / 2);
-            updateDisplay();
-            saveGame();
-            checkMilestones();
-        }
+  function updateBasketAfterFeed() {
+    if (state.totalFed === 10) {
+      state.disabled = true;
+      showRanOutPopup();
+    }
 
-        function showFloatingText(text, x, y) {
-            const span = document.createElement('div');
-            span.className = 'floating-text';
-            span.textContent = text;
-            span.style.left = x + 'px';
-            span.style.top = y + 'px';
-            document.body.appendChild(span);
-            setTimeout(() => span.remove(), 1000);
-        }
+    if (state.totalFed === 11) {
+      state.basketEggs = 40;
+      updateEggCountLabel();
+      state.disabled = false;
+    } else if (state.totalFed > 11) {
+      state.basketEggs -= 1;
+      updateEggCountLabel();
+    }
 
-        function showMilestone(title, message) {
-            const milestone = document.createElement('div');
-            milestone.className = 'milestone';
-            milestone.innerHTML = `<h3>${title}</h3><p>${message}</p>`;
-            document.body.appendChild(milestone);
-            setTimeout(() => milestone.remove(), 2000);
-        }
+    if (state.totalFed === 41) {
+      showWinPopup();
+    }
 
-        function checkMilestones() {
-            const milestones = [
-                { eggs: 10, title: '🎉', msg: 'Keep cracking!' },
-                { eggs: 100, title: '🌟', msg: 'You\'re doing great!' },
-                { eggs: 1000, title: '👑', msg: 'Egg Master!' },
-                { eggs: 10000, title: '💎', msg: 'Legendary Egg Collector!' }
-            ];
+    if ((state.basketEggs === 0 || state.basketEggs === Math.floor(Math.random() * 200)) && state.hasBoughtEggs && !state.won) {
+      state.hasBoughtEggs = false;
+      state.basketEggs = 80;
+      updateEggCountLabel();
+      state.disabled = true;
+      showRanOutPopup();
+    }
+  }
 
-            milestones.forEach(m => {
-                if (eggs >= m.eggs && !localStorage.getItem(`milestone_${m.eggs}`)) {
-                    localStorage.setItem(`milestone_${m.eggs}`, 'true');
-                    showMilestone(m.title, m.msg);
-                }
-            });
-        }
+  function feedEgg() {
+    if (state.won) return;
 
-        // Click egg button
-        eggButton.addEventListener('click', (e) => {
-            addEggs(eggPerClick);
-        });
+    state.totalFed += 1;
+    state.chewing = true;
+    renderEggFace();
 
-        // Upgrade 1: 2x Multiplier
-        document.getElementById('upgrade1').addEventListener('click', () => {
-            if (eggs >= upgrades.upgrade1.cost && !upgrades.upgrade1.bought) {
-                eggs -= upgrades.upgrade1.cost;
-                multiplier *= 2;
-                upgrades.upgrade1.bought = true;
-                updateDisplay();
-                saveGame();
-            }
-        });
+    setTimeout(() => {
+      state.chewing = false;
+      renderEggFace();
+      updateBasketAfterFeed();
+    }, 420);
+  }
 
-        // Upgrade 2: Auto Clicker
-        document.getElementById('upgrade2').addEventListener('click', () => {
-            if (eggs >= upgrades.upgrade2.cost && !upgrades.upgrade2.bought) {
-                eggs -= upgrades.upgrade2.cost;
-                autoClickersCount += 1;
-                upgrades.upgrade2.bought = true;
+  function rectNear(a, b) {
+    return (
+      a.right < b.right + b.width * 0.2 &&
+      a.left > b.left - b.width * 0.2 &&
+      a.top > b.top - b.height * 0.2 &&
+      a.bottom < b.bottom + b.height * 0.2
+    );
+  }
 
-                // Start auto clicking at 1 egg per second
-                setInterval(() => {
-                    if (autoClickersCount > 0) {
-                        eggs += autoClickersCount * multiplier;
-                        eggsPerSecondDisplay.textContent = autoClickersCount.toFixed(1);
-                        saveGame();
-                    }
-                }, 1000);
+  let dragPointerId = null;
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let currentY = 0;
 
-                updateDisplay();
-                saveGame();
-            }
-        });
+  function resetDrag() {
+    dragPointerId = null;
+    state.dragging = false;
+    draggableEgg.style.transform = '';
+    renderEggFace();
+  }
 
-        // Upgrade 3: Golden Egg
-        document.getElementById('upgrade3').addEventListener('click', () => {
-            if (eggs >= upgrades.upgrade3.cost && !upgrades.upgrade3.bought) {
-                eggs -= upgrades.upgrade3.cost;
-                multiplier *= 5;
-                hasGoldenEgg = true;
-                upgrades.upgrade3.bought = true;
-                showMilestone('✨', 'Golden Egg Unlocked!');
-                updateDisplay();
-                saveGame();
-            }
-        });
+  dragArea.addEventListener('pointerdown', (e) => {
+    if (state.disabled || state.popupOpen || state.won || state.startWinAnimation) return;
+    dragPointerId = e.pointerId;
+    dragArea.setPointerCapture(e.pointerId);
+    startX = e.clientX;
+    startY = e.clientY;
+    currentX = 0;
+    currentY = 0;
+    state.dragging = true;
+    renderEggFace();
+  });
 
-        // Initialize game
-        loadGame();
-        updateDisplay();
+  dragArea.addEventListener('pointermove', (e) => {
+    if (dragPointerId !== e.pointerId) return;
+    currentX = e.clientX - startX;
+    currentY = e.clientY - startY;
+    draggableEgg.style.transform = `translate(${currentX}px, ${currentY}px)`;
+  });
 
-        // Auto-save every 5 seconds
-        setInterval(saveGame, 5000);
-    </script>
+  dragArea.addEventListener('pointerup', (e) => {
+    if (dragPointerId !== e.pointerId) return;
+
+    const targetRect = eggTargetWrap.getBoundingClientRect();
+    const eggRect = eggDragVisual.getBoundingClientRect();
+
+    if (rectNear(eggRect, targetRect) && !state.disabled && !state.popupOpen) {
+      feedEgg();
+    }
+
+    resetDrag();
+  });
+
+  dragArea.addEventListener('pointercancel', () => {
+    resetDrag();
+  });
+
+  donateBtn.addEventListener('click', () => {
+    if (state.popupOpen) return;
+    showDonatePopup();
+  });
+
+  walkingEgg.addEventListener('animationend', () => {
+    if (state.startWinAnimation && !state.buttDone) {
+      showNudeEggPopup();
+    }
+  });
+
+  renderEggFace();
+  renderDragEgg();
+  updateEggCountLabel();
+  maybeTriggerRandomPopup();
+
+  console.log("yeah yeah yeah yeah yeah yeah ohhhhhohhhohh");
+</script>
 </body>
 </html>
