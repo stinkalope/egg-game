@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egg Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            background: linear-gradient(to bottom, #87ceeb, #e0f6ff);
+            border: 4px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            z-index: 10;
+        }
+
+        .game-over-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 100;
+            cursor: pointer;
+        }
+
+        .game-over-overlay.show {
+            display: flex;
+        }
+
+        .game-over-text {
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .final-score {
+            font-size: 32px;
+            color: #ffff00;
+            margin-bottom: 20px;
+        }
+
+        .restart-text {
+            font-size: 18px;
+            color: #aaa;
+            margin-top: 20px;
+        }
+
+        .basket {
+            position: absolute;
+            bottom: 10px;
+            width: 60px;
+            height: 50px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 50"><path d="M 10 0 L 50 0 Q 55 0 55 5 L 45 50 L 15 50 L 5 5 Q 5 0 10 0" fill="%23d4a574" stroke="%23333" stroke-width="2"/><line x1="15" y1="0" x2="15" y2="50" stroke="%23333" stroke-width="1"/><line x1="30" y1="0" x2="30" y2="50" stroke="%23333" stroke-width="1"/><line x1="45" y1="0" x2="45" y2="50" stroke="%23333" stroke-width="1"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            left: 170px;
+            transition: left 0.05s;
+        }
+
+        .egg {
+            position: absolute;
+            width: 30px;
+            height: 35px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 35"><ellipse cx="15" cy="18" rx="12" ry="16" fill="%23f5deb3" stroke="%23d4a574" stroke-width="1"/><ellipse cx="15" cy="10" rx="10" ry="12" fill="%23fffacd" opacity="0.6"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .broken-egg {
+            position: absolute;
+            width: 30px;
+            height: 35px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 35"><circle cx="10" cy="20" r="3" fill="%23ffff00"/><circle cx="20" cy="20" r="3" fill="%23ffff00"/><circle cx="15" cy="28" r="2" fill="%23ffff00"/><path d="M 5 10 Q 8 8 15 7 Q 22 8 25 10" stroke="%23d4a574" stroke-width="2" fill="none"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .miss-text {
+            position: absolute;
+            font-size: 18px;
+            color: red;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .instructions.hide {
+            display: none;
+        }
+
+        .instructions h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .instructions p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="game">
+        <div class="score" id="score">Score: 0</div>
+        <div class="instructions" id="instructions">
+            <h1>🥚 EGG GAME 🥚</h1>
+            <p>Move your basket with your mouse</p>
+            <p>Catch the falling eggs!</p>
+            <p>Click to start</p>
+        </div>
+        <div class="basket" id="basket"></div>
+        <div class="game-over-overlay" id="gameOver">
+            <div class="game-over-text">GAME OVER!</div>
+            <div class="final-score" id="finalScore">Score: 0</div>
+            <div class="restart-text">Click to play again</div>
+        </div>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('game');
+        const basket = document.getElementById('basket');
+        const scoreDisplay = document.getElementById('score');
+        const gameOverOverlay = document.getElementById('gameOver');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const instructions = document.getElementById('instructions');
+
+        let score = 0;
+        let gameRunning = false;
+        let basketX = 170;
+        const basketWidth = 60;
+        const containerWidth = 400;
+        const containerHeight = 600;
+        const gameAreaTop = 50;
+        const gameAreaBottom = containerHeight - 60;
+
+        let eggSpeed = 3;
+        let eggSpawnRate = 0.02;
+        const eggs = [];
+
+        // Mouse movement for basket
+        document.addEventListener('mousemove', (e) => {
+            const rect = gameContainer.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            basketX = Math.max(0, Math.min(containerWidth - basketWidth, mouseX - basketWidth / 2));
+            basket.style.left = basketX + 'px';
+        });
+
+        // Start game
+        document.addEventListener('click', () => {
+            if (!gameRunning) {
+                startGame();
+            }
+        });
+
+        function startGame() {
+            gameRunning = true;
+            score = 0;
+            eggs.length = 0;
+            eggSpeed = 3;
+            eggSpawnRate = 0.02;
+            scoreDisplay.textContent = 'Score: 0';
+            instructions.classList.add('hide');
+            gameOverOverlay.classList.remove('show');
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // Spawn new eggs
+            if (Math.random() < eggSpawnRate) {
+                spawnEgg();
+            }
+
+            // Update eggs
+            for (let i = eggs.length - 1; i >= 0; i--) {
+                const egg = eggs[i];
+                egg.y += eggSpeed;
+                egg.element.style.top = egg.y + 'px';
+
+                // Check if caught
+                if (egg.y + 35 >= containerHeight - 60 && egg.y + 35 <= containerHeight) {
+                    if (egg.x + 30 > basketX && egg.x < basketX + basketWidth) {
+                        catchEgg(egg, i);
+                        continue;
+                    }
+                }
+
+                // Check if missed
+                if (egg.y > containerHeight) {
+                    missEgg(egg, i);
+                }
+            }
+
+            // Increase difficulty
+            if (score > 0 && score % 10 === 0) {
+                eggSpawnRate = Math.min(0.08, 0.02 + (score / 100) * 0.06);
+                eggSpeed = 3 + (score / 50) * 2;
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnEgg() {
+            const x = Math.random() * (containerWidth - 30);
+            const eggDiv = document.createElement('div');
+            eggDiv.className = 'egg';
+            eggDiv.style.left = x + 'px';
+            eggDiv.style.top = gameAreaTop + 'px';
+            gameContainer.appendChild(eggDiv);
+
+            eggs.push({
+                x: x,
+                y: gameAreaTop,
+                element: eggDiv,
+                caught: false
+            });
+        }
+
+        function catchEgg(egg, index) {
+            egg.element.remove();
+            eggs.splice(index, 1);
+            score++;
+            scoreDisplay.textContent = 'Score: ' + score;
+
+            // Positive feedback
+            createFloatingText(egg.x, egg.y, '+1', '#00ff00');
+        }
+
+        function missEgg(egg, index) {
+            egg.element.remove();
+            eggs.splice(index, 1);
+            endGame();
+        }
+
+        function createFloatingText(x, y, text, color) {
+            const span = document.createElement('div');
+            span.className = 'miss-text';
+            span.textContent = text;
+            span.style.color = color;
+            span.style.left = x + 'px';
+            span.style.top = y + 'px';
+            gameContainer.appendChild(span);
+
+            let opacity = 1;
+            const interval = setInterval(() => {
+                opacity -= 0.05;
+                y -= 2;
+                span.style.opacity = opacity;
+                span.style.top = y + 'px';
+
+                if (opacity <= 0) {
+                    clearInterval(interval);
+                    span.remove();
+                }
+            }, 30);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            gameOverOverlay.classList.add('show');
+            finalScoreDisplay.textContent = 'Score: ' + score;
+            eggs.forEach(egg => egg.element.remove());
+        }
+    </script>
+</body>
+</html>
