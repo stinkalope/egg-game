@@ -17,300 +17,385 @@
             align-items: center;
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
         }
 
-        .container {
-            position: relative;
-            width: 400px;
-            height: 600px;
-            background: linear-gradient(to bottom, #87ceeb, #e0f6ff);
-            border: 4px solid #333;
+        .game-container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-width: 400px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 36px;
+        }
+
+        .egg-counter {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 30px;
+            min-height: 40px;
+        }
+
+        .egg-button {
+            width: 200px;
+            height: 200px;
+            border: none;
+            border-radius: 50%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><radialGradient id="eggGrad" cx="40%" cy="30%"><stop offset="0%" style="stop-color:%23fffacd;stop-opacity:1" /><stop offset="100%" style="stop-color:%23f5deb3;stop-opacity:1" /></radialGradient></defs><ellipse cx="100" cy="100" rx="85" ry="95" fill="url(%23eggGrad)" stroke="%23d4a574" stroke-width="2"/><ellipse cx="85" cy="80" rx="20" ry="25" fill="%23fffacd" opacity="0.7"/></svg>') center/contain no-repeat;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            margin: 0 auto 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: block;
+        }
+
+        .egg-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .egg-button:active {
+            transform: scale(0.98);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .stat-item {
+            background: #f5f5f5;
+            padding: 15px;
             border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-left: 4px solid #667eea;
         }
 
-        .score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 24px;
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
             font-weight: bold;
             color: #333;
-            z-index: 10;
         }
 
-        .game-over-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 100;
-            cursor: pointer;
+        .upgrades {
+            margin-top: 40px;
+            text-align: left;
         }
 
-        .game-over-overlay.show {
-            display: flex;
-        }
-
-        .game-over-text {
-            font-size: 48px;
-            font-weight: bold;
-            color: white;
-            margin-bottom: 20px;
+        .upgrades h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
             text-align: center;
         }
 
-        .final-score {
-            font-size: 32px;
-            color: #ffff00;
-            margin-bottom: 20px;
-        }
-
-        .restart-text {
-            font-size: 18px;
-            color: #aaa;
-            margin-top: 20px;
-        }
-
-        .basket {
-            position: absolute;
-            bottom: 10px;
-            width: 60px;
-            height: 50px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 50"><path d="M 10 0 L 50 0 Q 55 0 55 5 L 45 50 L 15 50 L 5 5 Q 5 0 10 0" fill="%23d4a574" stroke="%23333" stroke-width="2"/><line x1="15" y1="0" x2="15" y2="50" stroke="%23333" stroke-width="1"/><line x1="30" y1="0" x2="30" y2="50" stroke="%23333" stroke-width="1"/><line x1="45" y1="0" x2="45" y2="50" stroke="%23333" stroke-width="1"/></svg>');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+        .upgrade-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
             cursor: pointer;
-            left: 170px;
-            transition: left 0.05s;
+            font-size: 14px;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .egg {
-            position: absolute;
-            width: 30px;
-            height: 35px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 35"><ellipse cx="15" cy="18" rx="12" ry="16" fill="%23f5deb3" stroke="%23d4a574" stroke-width="1"/><ellipse cx="15" cy="10" rx="10" ry="12" fill="%23fffacd" opacity="0.6"/></svg>');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+        .upgrade-btn:hover:not(:disabled) {
+            border-color: #667eea;
+            background: #f9f9ff;
         }
 
-        .broken-egg {
-            position: absolute;
-            width: 30px;
-            height: 35px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 35"><circle cx="10" cy="20" r="3" fill="%23ffff00"/><circle cx="20" cy="20" r="3" fill="%23ffff00"/><circle cx="15" cy="28" r="2" fill="%23ffff00"/><path d="M 5 10 Q 8 8 15 7 Q 22 8 25 10" stroke="%23d4a574" stroke-width="2" fill="none"/></svg>');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+        .upgrade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .miss-text {
-            position: absolute;
-            font-size: 18px;
-            color: red;
+        .upgrade-cost {
             font-weight: bold;
-            pointer-events: none;
+            color: #667eea;
+            min-width: 80px;
+            text-align: right;
         }
 
-        .instructions {
-            position: absolute;
+        .floating-text {
+            position: fixed;
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            pointer-events: none;
+            animation: float 1s ease-out forwards;
+        }
+
+        @keyframes float {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+
+        .milestone {
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
             text-align: center;
-            color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            animation: milestoneShow 2s ease-out;
             pointer-events: none;
-            z-index: 5;
         }
 
-        .instructions.hide {
-            display: none;
+        @keyframes milestoneShow {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
         }
 
-        .instructions h1 {
+        .milestone h3 {
             font-size: 32px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
-        .instructions p {
-            font-size: 16px;
-            margin: 10px 0;
+        .milestone p {
+            font-size: 18px;
+            color: #aaa;
         }
     </style>
 </head>
 <body>
-    <div class="container" id="game">
-        <div class="score" id="score">Score: 0</div>
-        <div class="instructions" id="instructions">
-            <h1>🥚 EGG GAME 🥚</h1>
-            <p>Move your basket with your mouse</p>
-            <p>Catch the falling eggs!</p>
-            <p>Click to start</p>
+    <div class="game-container">
+        <h1>🥚 EGG GAME 🥚</h1>
+        <div class="egg-counter" id="eggCount">0 eggs</div>
+        <button class="egg-button" id="eggButton"></button>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Eggs Per Click</div>
+                <div class="stat-value" id="eggPerClick">1</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Eggs Per Second</div>
+                <div class="stat-value" id="eggsPerSecond">0</div>
+            </div>
         </div>
-        <div class="basket" id="basket"></div>
-        <div class="game-over-overlay" id="gameOver">
-            <div class="game-over-text">GAME OVER!</div>
-            <div class="final-score" id="finalScore">Score: 0</div>
-            <div class="restart-text">Click to play again</div>
+
+        <div class="upgrades">
+            <h2>🔧 Upgrades</h2>
+            <button class="upgrade-btn" id="upgrade1">
+                <span>2x Multiplier</span>
+                <span class="upgrade-cost" id="cost1">50 🥚</span>
+            </button>
+            <button class="upgrade-btn" id="upgrade2">
+                <span>Auto Clicker (1/sec)</span>
+                <span class="upgrade-cost" id="cost2">100 🥚</span>
+            </button>
+            <button class="upgrade-btn" id="upgrade3">
+                <span>Golden Egg (5x multiplier)</span>
+                <span class="upgrade-cost" id="cost3">500 🥚</span>
+            </button>
         </div>
     </div>
 
     <script>
-        const gameContainer = document.getElementById('game');
-        const basket = document.getElementById('basket');
-        const scoreDisplay = document.getElementById('score');
-        const gameOverOverlay = document.getElementById('gameOver');
-        const finalScoreDisplay = document.getElementById('finalScore');
-        const instructions = document.getElementById('instructions');
+        const eggButton = document.getElementById('eggButton');
+        const eggCountDisplay = document.getElementById('eggCount');
+        const eggPerClickDisplay = document.getElementById('eggPerClick');
+        const eggsPerSecondDisplay = document.getElementById('eggsPerSecond');
 
-        let score = 0;
-        let gameRunning = false;
-        let basketX = 170;
-        const basketWidth = 60;
-        const containerWidth = 400;
-        const containerHeight = 600;
-        const gameAreaTop = 50;
-        const gameAreaBottom = containerHeight - 60;
+        let eggs = 0;
+        let eggPerClick = 1;
+        let autoClickersCount = 0;
+        let multiplier = 1;
+        let hasGoldenEgg = false;
 
-        let eggSpeed = 3;
-        let eggSpawnRate = 0.02;
-        const eggs = [];
+        const upgrades = {
+            upgrade1: { cost: 50, bought: false },
+            upgrade2: { cost: 100, bought: false, interval: null },
+            upgrade3: { cost: 500, bought: false }
+        };
 
-        // Mouse movement for basket
-        document.addEventListener('mousemove', (e) => {
-            const rect = gameContainer.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            basketX = Math.max(0, Math.min(containerWidth - basketWidth, mouseX - basketWidth / 2));
-            basket.style.left = basketX + 'px';
-        });
-
-        // Start game
-        document.addEventListener('click', () => {
-            if (!gameRunning) {
-                startGame();
+        // Load game state from localStorage
+        function loadGame() {
+            const saved = localStorage.getItem('eggGameState');
+            if (saved) {
+                const state = JSON.parse(saved);
+                eggs = state.eggs || 0;
+                multiplier = state.multiplier || 1;
+                autoClickersCount = state.autoClickersCount || 0;
+                hasGoldenEgg = state.hasGoldenEgg || false;
+                upgrades.upgrade1.bought = state.upgrade1 || false;
+                upgrades.upgrade2.bought = state.upgrade2 || false;
+                upgrades.upgrade3.bought = state.upgrade3 || false;
             }
-        });
-
-        function startGame() {
-            gameRunning = true;
-            score = 0;
-            eggs.length = 0;
-            eggSpeed = 3;
-            eggSpawnRate = 0.02;
-            scoreDisplay.textContent = 'Score: 0';
-            instructions.classList.add('hide');
-            gameOverOverlay.classList.remove('show');
-            gameLoop();
         }
 
-        function gameLoop() {
-            if (!gameRunning) return;
-
-            // Spawn new eggs
-            if (Math.random() < eggSpawnRate) {
-                spawnEgg();
-            }
-
-            // Update eggs
-            for (let i = eggs.length - 1; i >= 0; i--) {
-                const egg = eggs[i];
-                egg.y += eggSpeed;
-                egg.element.style.top = egg.y + 'px';
-
-                // Check if caught
-                if (egg.y + 35 >= containerHeight - 60 && egg.y + 35 <= containerHeight) {
-                    if (egg.x + 30 > basketX && egg.x < basketX + basketWidth) {
-                        catchEgg(egg, i);
-                        continue;
-                    }
-                }
-
-                // Check if missed
-                if (egg.y > containerHeight) {
-                    missEgg(egg, i);
-                }
-            }
-
-            // Increase difficulty
-            if (score > 0 && score % 10 === 0) {
-                eggSpawnRate = Math.min(0.08, 0.02 + (score / 100) * 0.06);
-                eggSpeed = 3 + (score / 50) * 2;
-            }
-
-            requestAnimationFrame(gameLoop);
+        // Save game state to localStorage
+        function saveGame() {
+            const state = {
+                eggs,
+                multiplier,
+                autoClickersCount,
+                hasGoldenEgg,
+                upgrade1: upgrades.upgrade1.bought,
+                upgrade2: upgrades.upgrade2.bought,
+                upgrade3: upgrades.upgrade3.bought
+            };
+            localStorage.setItem('eggGameState', JSON.stringify(state));
         }
 
-        function spawnEgg() {
-            const x = Math.random() * (containerWidth - 30);
-            const eggDiv = document.createElement('div');
-            eggDiv.className = 'egg';
-            eggDiv.style.left = x + 'px';
-            eggDiv.style.top = gameAreaTop + 'px';
-            gameContainer.appendChild(eggDiv);
+        function updateDisplay() {
+            eggCountDisplay.textContent = eggs.toLocaleString() + ' eggs';
+            eggPerClickDisplay.textContent = (eggPerClick * multiplier);
+            eggsPerSecondDisplay.textContent = (autoClickersCount).toFixed(1);
 
-            eggs.push({
-                x: x,
-                y: gameAreaTop,
-                element: eggDiv,
-                caught: false
+            // Update upgrade buttons
+            document.getElementById('upgrade1').disabled = eggs < upgrades.upgrade1.cost || upgrades.upgrade1.bought;
+            document.getElementById('upgrade2').disabled = eggs < upgrades.upgrade2.cost || upgrades.upgrade2.bought;
+            document.getElementById('upgrade3').disabled = eggs < upgrades.upgrade3.cost || upgrades.upgrade3.bought;
+
+            // Update button text if bought
+            if (upgrades.upgrade1.bought) document.getElementById('upgrade1').innerHTML = '<span>✓ 2x Multiplier</span><span class="upgrade-cost">OWNED</span>';
+            if (upgrades.upgrade2.bought) document.getElementById('upgrade2').innerHTML = '<span>✓ Auto Clicker (1/sec)</span><span class="upgrade-cost">OWNED</span>';
+            if (upgrades.upgrade3.bought) document.getElementById('upgrade3').innerHTML = '<span>✓ Golden Egg (5x multiplier)</span><span class="upgrade-cost">OWNED</span>';
+        }
+
+        function addEggs(amount) {
+            const earnedEggs = amount * multiplier;
+            eggs += earnedEggs;
+            showFloatingText('+' + earnedEggs.toLocaleString(), event?.clientX || window.innerWidth / 2, event?.clientY || window.innerHeight / 2);
+            updateDisplay();
+            saveGame();
+            checkMilestones();
+        }
+
+        function showFloatingText(text, x, y) {
+            const span = document.createElement('div');
+            span.className = 'floating-text';
+            span.textContent = text;
+            span.style.left = x + 'px';
+            span.style.top = y + 'px';
+            document.body.appendChild(span);
+            setTimeout(() => span.remove(), 1000);
+        }
+
+        function showMilestone(title, message) {
+            const milestone = document.createElement('div');
+            milestone.className = 'milestone';
+            milestone.innerHTML = `<h3>${title}</h3><p>${message}</p>`;
+            document.body.appendChild(milestone);
+            setTimeout(() => milestone.remove(), 2000);
+        }
+
+        function checkMilestones() {
+            const milestones = [
+                { eggs: 10, title: '🎉', msg: 'Keep cracking!' },
+                { eggs: 100, title: '🌟', msg: 'You\'re doing great!' },
+                { eggs: 1000, title: '👑', msg: 'Egg Master!' },
+                { eggs: 10000, title: '💎', msg: 'Legendary Egg Collector!' }
+            ];
+
+            milestones.forEach(m => {
+                if (eggs >= m.eggs && !localStorage.getItem(`milestone_${m.eggs}`)) {
+                    localStorage.setItem(`milestone_${m.eggs}`, 'true');
+                    showMilestone(m.title, m.msg);
+                }
             });
         }
 
-        function catchEgg(egg, index) {
-            egg.element.remove();
-            eggs.splice(index, 1);
-            score++;
-            scoreDisplay.textContent = 'Score: ' + score;
+        // Click egg button
+        eggButton.addEventListener('click', (e) => {
+            addEggs(eggPerClick);
+        });
 
-            // Positive feedback
-            createFloatingText(egg.x, egg.y, '+1', '#00ff00');
-        }
+        // Upgrade 1: 2x Multiplier
+        document.getElementById('upgrade1').addEventListener('click', () => {
+            if (eggs >= upgrades.upgrade1.cost && !upgrades.upgrade1.bought) {
+                eggs -= upgrades.upgrade1.cost;
+                multiplier *= 2;
+                upgrades.upgrade1.bought = true;
+                updateDisplay();
+                saveGame();
+            }
+        });
 
-        function missEgg(egg, index) {
-            egg.element.remove();
-            eggs.splice(index, 1);
-            endGame();
-        }
+        // Upgrade 2: Auto Clicker
+        document.getElementById('upgrade2').addEventListener('click', () => {
+            if (eggs >= upgrades.upgrade2.cost && !upgrades.upgrade2.bought) {
+                eggs -= upgrades.upgrade2.cost;
+                autoClickersCount += 1;
+                upgrades.upgrade2.bought = true;
 
-        function createFloatingText(x, y, text, color) {
-            const span = document.createElement('div');
-            span.className = 'miss-text';
-            span.textContent = text;
-            span.style.color = color;
-            span.style.left = x + 'px';
-            span.style.top = y + 'px';
-            gameContainer.appendChild(span);
+                // Start auto clicking at 1 egg per second
+                setInterval(() => {
+                    if (autoClickersCount > 0) {
+                        eggs += autoClickersCount * multiplier;
+                        eggsPerSecondDisplay.textContent = autoClickersCount.toFixed(1);
+                        saveGame();
+                    }
+                }, 1000);
 
-            let opacity = 1;
-            const interval = setInterval(() => {
-                opacity -= 0.05;
-                y -= 2;
-                span.style.opacity = opacity;
-                span.style.top = y + 'px';
+                updateDisplay();
+                saveGame();
+            }
+        });
 
-                if (opacity <= 0) {
-                    clearInterval(interval);
-                    span.remove();
-                }
-            }, 30);
-        }
+        // Upgrade 3: Golden Egg
+        document.getElementById('upgrade3').addEventListener('click', () => {
+            if (eggs >= upgrades.upgrade3.cost && !upgrades.upgrade3.bought) {
+                eggs -= upgrades.upgrade3.cost;
+                multiplier *= 5;
+                hasGoldenEgg = true;
+                upgrades.upgrade3.bought = true;
+                showMilestone('✨', 'Golden Egg Unlocked!');
+                updateDisplay();
+                saveGame();
+            }
+        });
 
-        function endGame() {
-            gameRunning = false;
-            gameOverOverlay.classList.add('show');
-            finalScoreDisplay.textContent = 'Score: ' + score;
-            eggs.forEach(egg => egg.element.remove());
-        }
+        // Initialize game
+        loadGame();
+        updateDisplay();
+
+        // Auto-save every 5 seconds
+        setInterval(saveGame, 5000);
     </script>
 </body>
 </html>
